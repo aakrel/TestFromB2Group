@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">TestFromB2Group</string>
+    <string name="api_url">http://81.161.220.59:8709/api/precept-factor</string>
+</resources>
