@@ -13,8 +13,8 @@ import java.util.List;
 //подкапотная настройка отображения в RecyclerView
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> {
 
-    private List<HandbookOfConsequencesOfViolations> eventList;
-    private Context context;
+    private final  List<HandbookOfConsequencesOfViolations> eventList;
+    private final Context context;
 
     public EventAdapter(Context context, List<HandbookOfConsequencesOfViolations> eventList) {
         this.eventList = eventList;
@@ -35,23 +35,21 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
         holder.textViewName.setText(event.getName());
         holder.textViewId.setText(String.valueOf(event.getId())); // Сохраняем ID в TextView, даже если он скрыт
 
-        holder.itemView.setOnClickListener(new View.OnClickListener() { // Обработчик клика
-            @Override
-            public void onClick(View v) {
-                // Создаем Intent для открытия DetailActivity
-                Intent intent = new Intent(context, DetailActivity.class);
+        // Обработчик клика
+        holder.itemView.setOnClickListener(v -> {
+            // Создаем Intent для открытия DetailActivity
+            Intent intent = new Intent(context, DetailActivity.class);
 
-                // Передаем данные EventData в DetailActivity иными словами заполняем данными каждый элемент по клику
-                intent.putExtra("eventId", event.getId());
-                intent.putExtra("eventName", event.getName());
-                intent.putExtra("eventDivisionType", event.getDivisionType());
-                if (event.getDel() != null) {
-                    intent.putExtra("eventDel", event.getDel().toString());
-                } else {
-                    intent.putExtra("eventDel", -1); // Или другое значение по умолчанию
-                }
-                context.startActivity(intent);
+            // Передаем данные EventData в DetailActivity иными словами заполняем данными каждый элемент по клику
+            intent.putExtra("eventId", event.getId());
+            intent.putExtra("eventName", event.getName());
+            intent.putExtra("eventDivisionType", event.getDivisionType());
+            if (event.getDel() != null) {
+                intent.putExtra("eventDel", event.getDel().toString());
+            } else {
+                intent.putExtra("eventDel", -1); // Или другое значение по умолчанию
             }
+            context.startActivity(intent);
         });
     }
     //узнает сколько элементов нужно отобразить в списке

@@ -2,9 +2,7 @@ package com.example.testfromb2group;
 
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -30,10 +28,10 @@ import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
-    private SaveToSQL dbHelper;
+    private ManagerDB dbManager;
     private RecyclerView recyclerViewEvents;
     private EventAdapter eventAdapter;
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private SearchView searchView;
     private List<HandbookOfConsequencesOfViolations> allEventData; //  Сохраняем все данные
     private List<HandbookOfConsequencesOfViolations> filteredEventData; //  Список для фильтрации
@@ -43,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        dbHelper = new SaveToSQL(this);
+        dbManager = new ManagerDB(this);
 
         Button insertButton = findViewById(R.id.insertButton);
         Button deleteButton = findViewById(R.id.deleteButton);
@@ -57,26 +55,20 @@ public class MainActivity extends AppCompatActivity {
         eventAdapter = new EventAdapter(this, filteredEventData);  //
         recyclerViewEvents.setAdapter(eventAdapter); // Устанавливаем адаптер
 
-        insertButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Получаем JSON данные из сети (пример)
-                fetchAndSaveData(getString(R.string.api_url));
-                loadData();
-            }
+        insertButton.setOnClickListener(v -> {
+            // Получаем JSON данные из сети (пример)
+            fetchAndSaveData(getString(R.string.api_url));
+            loadData();
         });
 
-        deleteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                boolean isDeleted = dbHelper.deleteDatabase(MainActivity.this);
-                if (isDeleted) {
-                    Toast.makeText(MainActivity.this, "Database deleted", Toast.LENGTH_SHORT).show();
-                    deleteData();
+        deleteButton.setOnClickListener(v -> {
+            boolean isDeleted = dbManager.deleteDatabase(MainActivity.this);
+            if (isDeleted) {
+                Toast.makeText(MainActivity.this, "Database deleted", Toast.LENGTH_SHORT).show();
+                deleteData();
 
-                } else {
-                    Toast.makeText(MainActivity.this, "Database deletion failed", Toast.LENGTH_SHORT).show();
-                }
+            } else {
+                Toast.makeText(MainActivity.this, "Database deletion failed", Toast.LENGTH_SHORT).show();
             }
         });
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -96,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadData() {
         executorService.execute(() -> {
-            allEventData = dbHelper.getAllData();
+            allEventData = dbManager.getAllData();
             runOnUiThread(() -> {
                 eventAdapter = new EventAdapter(MainActivity.this, allEventData);
                 recyclerViewEvents.setAdapter(eventAdapter);
@@ -126,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
                         JSONObject jsonData = jArr.getJSONObject(i);
 
                         // Сохраняем данные в базу данных
-                        boolean isInserted = dbHelper.insertData(jsonData); // Передаем JSON-строку
+                        boolean isInserted = dbManager.insertData(jsonData); // Передаем JSON-строку
 
                         if (!isInserted) {
                             Log.e(TAG, "Failed to insert data for object at index " + i);
@@ -134,21 +126,15 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     // Отображаем сообщение в UI потоке
-                    runOnUiThread(() -> {
-                        Toast.makeText(MainActivity.this, "Data inserted", Toast.LENGTH_SHORT).show();
-                    });
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Data inserted", Toast.LENGTH_SHORT).show());
 
                 } else {
                     Log.e(TAG, "Failed to fetch data. getContent() returned null.");
-                    runOnUiThread(() -> {
-                        Toast.makeText(MainActivity.this, "Failed to fetch data", Toast.LENGTH_SHORT).show();
-                    });
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Failed to fetch data", Toast.LENGTH_SHORT).show());
                 }
             } catch (IOException | JSONException e) {
                 Log.e(TAG, "Error fetching or parsing data", e);
-                runOnUiThread(() -> {
-                    Toast.makeText(MainActivity.this, "Error fetching or parsing data", Toast.LENGTH_SHORT).show();
-                });
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Error fetching or parsing data", Toast.LENGTH_SHORT).show());
             }
         });
     }
@@ -198,10 +184,10 @@ public class MainActivity extends AppCompatActivity {
             }
             return (buf.toString());
         } catch (Exception e) {
-            e.printStackTrace(); //  ВАЖНО: Оставьте вывод трассировки стека для отладки
-            return null; //  <<<------ Возвращаем null в случае ошибки!
+            e.printStackTrace();
+            return null;
         } finally {
-            try {  //  <<<--- Добавлен try-catch для закрытия ресурсов
+            try {
                 if (reader != null) {
                     reader.close();
                 }
