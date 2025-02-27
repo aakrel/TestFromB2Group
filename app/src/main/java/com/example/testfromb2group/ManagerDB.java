@@ -16,7 +16,7 @@ import android.util.Log;
 
 import org.json.JSONObject;
 
-public class SaveToSQL extends SQLiteOpenHelper {
+public class ManagerDB extends SQLiteOpenHelper {
 
     private static final String TAG = "DatabaseHelper";
     private static final String DATABASE_NAME = "b2_test.db";
@@ -34,7 +34,7 @@ public class SaveToSQL extends SQLiteOpenHelper {
             + COLUMN_DEL + " INTEGER"
             + ");";
 
-    public SaveToSQL(Context context) {
+    public ManagerDB(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
